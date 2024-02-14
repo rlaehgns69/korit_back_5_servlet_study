@@ -8,9 +8,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.study.insert_and_select.config.DBConfig;
 import com.study.insert_and_select.entity.Student;
-
-import config.DBConfig;
 
 public class StudentDao {
 	private static StudentDao instance;
@@ -70,12 +69,6 @@ public class StudentDao {
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
-		
-		try {
-			
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
 	}
 		
 		return student;
@@ -90,7 +83,7 @@ public class StudentDao {
 			Class.forName("com.mysql.cj.jdbc.Driver");// 데이터베이스 커넥터 드라이브 클래스 이름
 			
 			con = DriverManager.getConnection(DBConfig.URL, DBConfig.USERNAME, DBConfig.PASSWORD);
-			String sql = "select * from student_tb where student_name = ?";
+			String sql = "insert into student_tb(student_name, student_age) values(?, ?)";
 			pstmt = con.prepareStatement(sql);
 			pstmt.setString(1, student.getName()); 
 			pstmt.setInt(2, student.getAge()); 
@@ -158,7 +151,6 @@ public class StudentDao {
 					e.printStackTrace();
 				}
 			}
-			return students;
-		
+			return students;	
 	}
 }

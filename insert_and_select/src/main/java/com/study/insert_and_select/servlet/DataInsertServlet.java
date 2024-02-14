@@ -49,10 +49,10 @@ public class DataInsertServlet extends HttpServlet {
 		while((readData = reader.readLine()) != null) {
 			builder.append(readData);
 		}
-		
+		Gson gson = new Gson();
 		// 1.Json -> Map
 		// Json -> Entity객체
-		Gson gson = new Gson();
+		
 		Map<String, Object> map = gson.fromJson(builder.toString(), Map.class);
 		
 		System.out.println(map);
@@ -136,7 +136,7 @@ public class DataInsertServlet extends HttpServlet {
 		responseMap.put("data", "응답데이터");
 		responseMap.put("successCount", successCount);
 		
-		response.setStatus(201);
+		response.setStatus(400);
 		response.setContentType("application/json");
 //		response.setStatus(400);
 		
