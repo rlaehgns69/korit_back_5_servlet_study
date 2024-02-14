@@ -24,7 +24,6 @@ public class CommonFilter extends HttpFilter implements Filter {
 
 	
 	public void destroy() {
-		// TODO Auto-generated method stub
 	}
 
 

@@ -9,9 +9,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpFilter;
+import javax.servlet.http.HttpServletResponse;
 
 
-@WebFilter("/CommonFilter")
+@WebFilter("/*")
 public class CommonFilter extends HttpFilter implements Filter {
        
     public CommonFilter() {
@@ -23,6 +24,13 @@ public class CommonFilter extends HttpFilter implements Filter {
 	}
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
+		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
+		
+		httpServletResponse.setHeader("Access-control-Allow-Headers", "Content-Type");
+		httpServletResponse.setHeader("Access-Control-Allow-Origin","*");
+		
+		request.setCharacterEncoding("utf-8");
+		response.setCharacterEncoding("utf-8");
 		
 		chain.doFilter(request, response);
 	}

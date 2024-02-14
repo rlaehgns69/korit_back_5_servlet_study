@@ -136,7 +136,7 @@ public class DataInsertServlet extends HttpServlet {
 		responseMap.put("data", "응답데이터");
 		responseMap.put("successCount", successCount);
 		
-		response.setStatus(400);
+		response.setStatus(201);
 		response.setContentType("application/json");
 //		response.setStatus(400);
 		
