@@ -25,13 +25,13 @@ public class CommonFilter extends HttpFilter implements Filter {
 
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		HttpServletResponse httpServletResponse = (HttpServletResponse) response;
-		
+		// CORS
 		httpServletResponse.setHeader("Access-control-Allow-Headers", "Content-Type");
 		httpServletResponse.setHeader("Access-Control-Allow-Origin","*");
-		
+		// Encoding
 		request.setCharacterEncoding("utf-8");
 		response.setCharacterEncoding("utf-8");
-		
+		// servlet 요청
 		chain.doFilter(request, response);
 	}
 

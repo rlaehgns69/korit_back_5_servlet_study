@@ -1,21 +1,22 @@
 package com.study.product.dao;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-
-import com.study.product.config.DBConfig;
-import com.study.product.entity.Product;
+import com.study.product.config.DBConnectionMgr;
+import com.study.product.vo.ProductVo;
 
 public class ProductDao {
 	private static ProductDao instance;
-	
-	private ProductDao() {}
+	private DBConnectionMgr pool;
+	// 싱글톤 pool class forname x driver connection x
+	private ProductDao() {
+		pool = DBConnectionMgr.getInstance();
+	}
 	
 	public static ProductDao getInstance() {
 		if(instance == null) {
@@ -23,133 +24,105 @@ public class ProductDao {
 		}
 		return instance;
 	}
-	public Product findProductByProductName(String productName) {
+	// ->Service ProductService
+	public List<ProductVo> getProductList() {
+		List<ProductVo> list = new ArrayList<>();
 		Connection con = null;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
-		Product product = null;
 		
 		try {
-			
-			Class.forName("com.mysql.cj.jdbc.Driver");// 데이터베이스 커넥터 드라이브 클래스 이름
-			
-			con = DriverManager.getConnection(DBConfig.URL, DBConfig.USERNAME, DBConfig.PASSWORD);
-			String sql = "select * from student_tb where student_name = ?";
-			pstmt = con.prepareStatement(sql);
-			pstmt.setString(1, productName); //json의 
-			rs = pstmt.executeQuery();
-			
-			if(rs.next()) {//조회 한줄 존재
-				product = Product.builder()
-						.productId(rs.getInt(1))
-						.productName(rs.getString(2))
-						.productPrice(rs.getString(3))
-						.productSize(rs.getString(4))
-						.build();
-			}// rs = null;
-		} catch(Exception e) {
-			e.printStackTrace();
-			
-		} finally {
-			try {
-				if(rs != null) {
-					rs.close();
-				}
-				if(pstmt != null) {
-					pstmt.close();
-				}
-				if(con != null) {
-					con.close();
-				}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-	}
-		
-		return product;
-	}
-	
-	
-	public int saveProduct(Product product) {
-		Connection con = null;
-		PreparedStatement pstmt = null;
-		int successCount = 0;
-		
-		try {
-			Class.forName("com.mysql.cj.jdbc.Driver");// 데이터베이스 커넥터 드라이브 클래스 이름
-			
-			con = DriverManager.getConnection(DBConfig.URL, DBConfig.USERNAME, DBConfig.PASSWORD);
-			String sql = "insert into product_tb(product_name, product_price, product_size) values(?, ?, ?)";
-			pstmt = con.prepareStatement(sql);
-			pstmt.setString(1, product.getProductName()); 
-			pstmt.setString(2, product.getProductPrice()); 
-			pstmt.setString(3, product.getProductSize());
-			successCount = pstmt.executeUpdate();
-
-		} catch(Exception e) {
-			e.printStackTrace();
-			
-		} finally {
-			try {
-				if(pstmt != null) {
-					pstmt.close();
-				}
-				if(con != null) {
-					con.close();
-				}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		return successCount;
-		
-	}
-	public List<Product> getProducttListAll() {
-		Connection con = null;
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		List<Product> products = new ArrayList<>();
-		
-		try {
-			
-			Class.forName("com.mysql.cj.jdbc.Driver");// 데이터베이스 커넥터 드라이브 클래스 이름
-			
-			con = DriverManager.getConnection(DBConfig.URL, DBConfig.USERNAME, DBConfig.PASSWORD);
+			con = pool.getConnection();
 			String sql = "select * from product_tb";
 			pstmt = con.prepareStatement(sql);
 			rs = pstmt.executeQuery();
 			
-			while(rs.next()) {//조회 한줄 존재
-				Product product = Product.builder()
-						.productId(rs.getInt(1))
-						.productName(rs.getString(2))
-						.productPrice(rs.getString(3))
-						.productSize(rs.getString(4))
-						.build();
+			while(rs.next()) {
+				ProductVo productVo = ProductVo.builder()
+								.productId(rs.getInt(1))
+								.productName(rs.getString(2))
+								.productPrice(rs.getInt(3))
+								.productSize(rs.getString(4))
+								.build();
 				
-				products.add(product);
-			}// rs = null;
-		} catch(Exception e) {
-			e.printStackTrace();
-			
-		} finally {
-			try {
-				if(rs != null) {
-					rs.close();
-				}
-				if(pstmt != null) {
-					pstmt.close();
-				}
-				if(con != null) {
-					con.close();
-				}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
+				list.add(productVo);
 			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con, pstmt, rs);
 		}
-		return products;	
+		
+		return list;
+	}
+	
+	
+	public ProductVo findProductByProductName(String productName) {
+		ProductVo productVo = null;
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs =null;
+		
+		try {
+			con = pool.getConnection();
+			String sql = "select * from product_tb where product_name = ?";
+			pstmt = con.prepareStatement(sql);
+			pstmt.setString(1, productName);
+			rs = pstmt.executeQuery();
+			// unique
+			// 데이터 들고왔는지 확인
+			if(rs.next()) {
+				productVo = ProductVo.builder()
+							.productId(rs.getInt(1))
+							.productName(rs.getString(2))
+							.productPrice(rs.getInt(3))
+							.productSize(rs.getString(4))
+							.build();
+			}
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con, pstmt, rs);
+		}
+		// finally pool.freeConnection
+		// 라이브러리 pool 관리 간소화됨.
+		return productVo;
+	}
+	
+	// dto를 중간에 vo로 변환
+	public int save(ProductVo productVo) {
+		int successCount = 0;
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		//generic key
+		try {
+			con = pool.getConnection();
+			String sql = "insert into product_tb values(0, ?, ?, ?)";
+			//pstmt 생성부분 sql, 오토인크리먼트 키값을 알고싶다.
+			pstmt = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS );
+			
+			pstmt.setString(1,  productVo.getProductName());
+			pstmt.setInt(2,  productVo.getProductPrice());
+			pstmt.setString(3,  productVo.getProductSize());
+			
+			successCount = pstmt.executeUpdate();
+			rs = pstmt.getGeneratedKeys();// resultSet
+			// insert 한건
+			// AI key 값 넣기위해서 resultSet
+			if(rs.next()) {
+				productVo.setProductId(rs.getInt(1));
+			}
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally {
+			pool.freeConnection(con, pstmt, rs);
+		}
+		
+		return successCount;
 	}
 }

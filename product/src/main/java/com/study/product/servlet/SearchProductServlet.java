@@ -7,20 +7,21 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-@WebServlet("/SearchProductServlet")
+import com.study.product.service.ProductService;
+import com.study.product.utils.ResponseEntity;
+// Servlet->Service->dao->DB(dto)
+@WebServlet("/products")
 public class SearchProductServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-       
+    private ProductService productService;
+	
     public SearchProductServlet() {
         super();
+        productService = ProductService.getInstance();
     }
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
-	}
-
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		doGet(request, response);
+		ResponseEntity.ofJson(response, 200, productService.searchProducts());
 	}
 
 }
