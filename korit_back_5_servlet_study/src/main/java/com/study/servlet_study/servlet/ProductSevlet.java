@@ -12,7 +12,7 @@ import com.study.servlet_study.entity.Product1;
 import com.study.servlet_study.service.ProductService;
 
 
-@WebServlet("/product")
+@WebServlet("/product2")
 public class ProductSevlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
     ProductService productService;   
